@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Multiply Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+        }
+
+        #setting {
+            margin: 1rem;
+        }
+
+        button {
+            padding: 0 .5rem;
+        }
+
+        #matrixs {
+            width: 100vw;
+            display: flex;
+            justify-content: start;
+        }
+
+        #matrixs>* {
+            margin: 0 1rem;
+        }
+
+        .block {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            line-height: 2rem;
+            border: #333 1px solid;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .highlight {
+            background-color: #FAA;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="setting">
+        <label for="order">Order: </label>
+        <select name="order" id="order">
+            <option value="ijk">ijk</option>
+            <option value="ikj">ikj</option>
+            <option value="jik">jik</option>
+            <option value="jki">jki</option>
+            <option value="kij">kij</option>
+            <option value="kji">kji</option>
+        </select>
+        <button onclick="animation()">Start</button>
+        <button onclick="stop()">Reset</button>
+    </div>
+    <div id="matrixs">
+        <div>
+            <p>C</p>
+            <div class="matrix" id="C"></div>
+        </div>
+        <div>
+            <p>A</p>
+            <div class="matrix" id="A"></div>
+        </div>
+        <div>
+            <p>B</p>
+            <div class="matrix" id="B"></div>
+        </div>
+    </div>
+    <script>
+        const dimension = 10, timeout = 50;
+        const A = [], B = [], C = [];
+        const AMatrix = document.querySelector("#A");
+        const BMatrix = document.querySelector("#B");
+        const CMatrix = document.querySelector("#C");
+        const ms = [A, B, C];
+        const matrixs = [AMatrix, BMatrix, CMatrix]
+        const order = document.querySelector('#order');
+        let timer = 0;
+        let i, j, k;
+
+        for (let i = 0; i < dimension; ++i) {
+            A.push([]);
+            B.push([]);
+            C.push([]);
+            for (let j = 0; j < dimension; ++j) {
+                A[i].push(Math.ceil(Math.random() * 10));
+                B[i].push(Math.ceil(Math.random() * 10));
+                C[i].push(0);
+            }
+        }
+        matrixs.forEach((matrix, idx) => {
+            for (let i = 0; i < dimension; ++i) {
+                let row = '';
+                for (let j = 0; j < dimension; ++j) {
+                    row += `<span class="block b${i}_${j}"">${ms[idx][i][j]}</span>`;
+                }
+                row = `<div>${row}</div>`;
+                matrix.insertAdjacentHTML('beforeend', row);
+            }
+        })
+
+        function init() {
+            for (let i = 0; i < dimension; ++i) {
+                for (let j = 0; j < dimension; ++j) {
+                    C[i][j] = 0;
+                }
+            }
+            CMatrix.innerHTML = '';
+            for (let i = 0; i < dimension; ++i) {
+                let row = '';
+                for (let j = 0; j < dimension; ++j) {
+                    row += `<span class="block b${i}_${j}"">${C[i][j]}</span>`;
+                }
+                row = `<div>${row}</div>`;
+                CMatrix.insertAdjacentHTML('beforeend', row);
+            }
+        }
+
+        function animation() {
+            stop();
+            i = 0;
+            j = 0;
+            k = 0;
+            eval(`${order.value}()`);
+        }
+
+        function stop() {
+            clearTimeout(timer);
+            timer = 0;
+            init();
+        }
+
+        function ijk() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++k;
+            if (k === 10) {
+                ++j;
+                k = 0;
+            }
+            if (j === 10) {
+                ++i;
+                j = 0;
+            }
+            if (i < 10) {
+                timer = setTimeout(ijk, timeout);
+            }
+        }
+
+        function ikj() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++j;
+            if (j === 10) {
+                ++k;
+                j = 0;
+            }
+            if (k === 10) {
+                ++i;
+                k = 0;
+            }
+            if (i < 10) {
+                timer = setTimeout(ikj, timeout);
+            }
+        }
+
+        function jik() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++k;
+            if (k === 10) {
+                ++i;
+                k = 0;
+            }
+            if (i === 10) {
+                ++j;
+                i = 0;
+            }
+            if (j < 10) {
+                timer = setTimeout(jik, timeout);
+            }
+        }
+
+        function jki() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++i;
+            if (i === 10) {
+                ++k;
+                i = 0;
+            }
+            if (k === 10) {
+                ++j;
+                k = 0;
+            }
+            if (j < 10) {
+                timer = setTimeout(jki, timeout);
+            }
+        }
+
+        function kij() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++j;
+            if (j === 10) {
+                ++i;
+                j = 0;
+            }
+            if (i === 10) {
+                ++k;
+                i = 0;
+            }
+            if (k < 10) {
+                timer = setTimeout(kij, timeout);
+            }
+        }
+
+        function kji() {
+            C[j][i] += A[k][i] * B[j][k];
+            CMatrix.querySelector(`.b${j}_${i}`).innerHTML = C[j][i];
+            blink(CMatrix, j, i);
+            blink(AMatrix, k, i);
+            blink(BMatrix, j, k);
+            ++i;
+            if (i === 10) {
+                ++j;
+                i = 0;
+            }
+            if (j === 10) {
+                ++k;
+                j = 0;
+            }
+            if (k < 10) {
+                timer = setTimeout(kji, timeout);
+            }
+        }
+
+        function blink(martix, row, col) {
+            const grid = martix.querySelector(`.b${row}_${col}`);
+            grid.classList.add('highlight');
+            setTimeout(() => {
+                grid.classList.remove('highlight');
+            }, timeout);
+        }
+    </script>
+</body>
+
+</html>
